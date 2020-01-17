@@ -60,16 +60,17 @@ points(allgray$Longitude, allgray$Latitude, pch=".", cex=5, col= "red")
 ###For loop to caluclate Bins
 
 ```{r, echo=FALSE}
-#This section runs a for loop which bins the data, and repeats it n times in order to get the deviation caused by randomly #sampling from the null data
+#This section runs a for loop which bins the data, and repeats it n times in order to get the deviation caused by randomly
+#sampling from the null data
 
-nulldata.RF=completeFun(nulldata,"RadioFluxLA") #Remove NAs from the nulldata for the RF column
+nulldata.RF=completeFun(nulldata,"RadioFlux") #Remove NAs from the nulldata for the RF column
 n=10000  #Number of iterations of bootstrap
 
 #Initiate variables 
 ##data frames to hold the result for each iteration of the bins
-SSbins_Max=setNames(data.frame(matrix(ncol = 6, nrow = 0)), c("0-12", "12-27", "27-56", "56-95", "95-151", "151+"))
+SSbins=setNames(data.frame(matrix(ncol = 6, nrow = 0)), c("0-12", "12-27", "27-56", "56-95", "95-151", "151+"))
 RFbins=setNames(data.frame(matrix(ncol = 6, nrow = 0)), c("0-72", "72-82", "82-100", "100-126", "126-165", "165+"))
-Kbins=setNames(data.frame(matrix(ncol=6,nrow=0)), c("1-9","9-15","15-23","23-35","35-54","54+"))
+Apbins=setNames(data.frame(matrix(ncol=6,nrow=0)), c("1-9","9-15","15-23","23-35","35-54","54+"))
 
 #Open a progress bar
 pb <- winProgressBar(title = "progress bar", min = 0,
@@ -82,9 +83,9 @@ for (i in seq(1,n)) {
   
   #Bin and save group proportions
  
-  SSbins_Max[i,]=binSS(datause)
+  SSbins[i,]=binSS(datause)
   RFbins[i,]=binRF(datause)
-  Kbins[i,]=binK(datause)
+  Apbins[i,]=binK(datause)
   
   #Update progress bar
   setWinProgressBar(pb, i, title=paste( round(i/n*100, 0),
@@ -101,11 +102,11 @@ close(pb)
   #Bin sunspots
 
 #Remove 0's or infinite columns
-  SSbins_Max<- SSbins_Max[is.finite(rowSums(SSbins_Max)),]
+  SSbins<- SSbins[is.finite(rowSums(SSbins)),]
 #Find and save the mean for each bin
-  means=c(mean(SSbins_Max$`0-12`), mean(SSbins_Max$`12-27`), mean(SSbins_Max$`27-56`), mean(SSbins_Max$`56-95`), mean(SSbins_Max$`95-151`),mean(SSbins_Max$`151+`))
+  means=c(mean(SSbins$`0-12`), mean(SSbins$`12-27`), mean(SSbins$`27-56`), mean(SSbins$`56-95`), mean(SSbins$`95-151`),mean(SSbins$`151+`))
 #Find and save the standard deviation for each bin  
-  se=c(sd(SSbins_Max$`0-12`), sd(SSbins_Max$`12-27`), sd(SSbins_Max$`27-56`), sd(SSbins_Max$`56-95`), sd(SSbins_Max$`95-151`),sd(SSbins_Max$`151+`))
+  se=c(sd(SSbins$`0-12`), sd(SSbins$`12-27`), sd(SSbins$`27-56`), sd(SSbins$`56-95`), sd(SSbins$`95-151`),sd(SSbins$`151+`))
 #Make a variable that will be the top of the error bars  
   plotTop=max(means+se*2)
 #Name of each bin  
@@ -123,7 +124,7 @@ text(barCenters,par("usr")[3] - 0.12,labels=names.SS,srt=45,pos=1,xpd=TRUE, cex=
 arrows(barCenters, means-se*2, barCenters, means+se*2,
        lwd=2, angle=90, code=3, length = .1)
 
-  #BinRF
+#BinRF
 #Repeat all code from above for RF
 RFbins<- RFbins[is.finite(rowSums(RFbins)),]
   means=c(mean(RFbins$`0-72`), mean(RFbins$`72-82`), mean(RFbins$`82-100`), mean(RFbins$`100-126`), mean(RFbins$`126-165`),mean(RFbins$`165+`))
@@ -142,10 +143,10 @@ arrows(barCenters, means-se*2, barCenters, means+se*2,
        lwd=2, angle=90, code=3, length = .1)
 
 #Bin Ap
-#Repeat all code from above for Ap (labeled K-here)
-Kbins<- Kbins[is.finite(rowSums(Kbins)),]
-means=c(mean(Kbins$`1-9`), mean(Kbins$`9-15`), mean(Kbins$`15-23`), mean(Kbins$`23-35`), mean(Kbins$`35-54`),mean(Kbins$`54+`))
-se=c(sd(Kbins$`1-9`), sd(Kbins$`9-15`), sd(Kbins$`15-23`), sd(Kbins$`23-35`), sd(Kbins$`35-54`),sd(Kbins$`54+`))
+#Repeat all code from above for Ap
+Apbins<- Apbins[is.finite(rowSums(Apbins)),]
+means=c(mean(Apbins$`1-9`), mean(Apbins$`9-15`), mean(Apbins$`15-23`), mean(Apbins$`23-35`), mean(Apbins$`35-54`),mean(Apbins$`54+`))
+se=c(sd(Apbins$`1-9`), sd(Apbins$`9-15`), sd(Apbins$`15-23`), sd(Apbins$`23-35`), sd(Apbins$`35-54`),sd(Apbins$`54+`))
 
   plotTop=max(means+se*2)
   names.K=c("1-9","9-15","15-23","23-35","35-54","54+")
@@ -188,7 +189,7 @@ pb <- winProgressBar(title = "progress bar", min = 0,
 for (i in seq(1,n)) {
   
   #Take a sample from the null data, of the same size as the stranding dataframe
-  datause=nulldata.RF.season[sample(nrow(nulldata.RF.season),185, replace=TRUE ),]
+  datause=nulldata.RF.season[sample(nrow(nulldata.RF.season),186, replace=TRUE ),]
   #Save the means of each dist
   xbar.n.SS[i]=mean(datause$SS.scale)
   xbar.n.RF[i]=mean(datause$RF.scale)
@@ -273,7 +274,8 @@ findtime=function(data)
   #Start with the second data point
   for (i in 2: nrow(data))
 {
-    #For every data point, takes the curent date subtracts that from the date of the previous data point. Saves the result in the column "timebetween"
+    #For every data point, takes the curent date subtracts that from the date of the previous data point. 
+    #Saves the result in the column "timebetween"
 data$timebetween[i]=data$DateAsDate[i]-data$DateAsDate[i-1]
   }
 data  
@@ -384,27 +386,27 @@ m2
 ##It then saves the AIC output from each 
 ##And bootstraps n times
 
-n=100  #How many iterations?
+n=1000  #How many iterations?
 
 #Note: Ap=K
 S=rep(0,n)       #Season
-K=rep(0,n)       #K
+K=rep(0,n)       #Ap
 RF=rep(0,n)      #RF
 PDO=rep(0,n)     #PDO
 
-S_K=rep(0,n)     #Season+K
+S_K=rep(0,n)     #Season+Ap
 S_RF=rep(0,n)    #Season+RF
 PDO_S=rep(0,n)   #PDO+Season
-K_RF=rep(0,n)    #K+RF
-PDO_K=rep(0,n)   #K+PDO
+K_RF=rep(0,n)    #Ap+RF
+PDO_K=rep(0,n)   #Ap+PDO
 PDO_RF=rep(0,n)  #PDO+RF
 
-S_K_RF=rep(0,n)  #Season+K+RF
-PDO_S_K=rep(0,n) #Season+K+PDO
+S_K_RF=rep(0,n)  #Season+Ap+RF
+PDO_S_K=rep(0,n) #Season+Ap+PDO
 PDO_S_RF=rep(0,n)#Season+RF+PDO
-PDO_RF_K=rep(0,n)#Season+RF+K
+PDO_RF_K=rep(0,n)#Season+RF+Ap
 
-PDO_S_RF_K=rep(0,n)#Season+K+RF+PDO
+PDO_S_RF_K=rep(0,n)#Season+Ap+RF+PDO
 
 #Open progress bar
 pb <- winProgressBar(title = "progress bar", min = 0,
@@ -418,35 +420,20 @@ for (i in seq(1,n))
   
   #For each possible permutation of model, create a logistic model and save the AIC value
   
-#Season
 S[i]=extractAIC(glm(Stranded~DateAsCont, data=GrayData, family=binomial))[2]
-#DateAsCont+SS
 S_K[i]=extractAIC(glm(Stranded~DateAsCont+AP.scale, data=GrayData, family=binomial))[2]
-#SS
 K[i]=extractAIC(glm(Stranded~AP.scale, data=GrayData, family=binomial))[2]
-#Season+RF
 S_RF[i]=extractAIC(glm(Stranded~DateAsCont+RF.scale, data=GrayData, family=binomial))[2]
-#RF
 RF[i]=extractAIC(glm(Stranded~RF.scale, data=GrayData, family=binomial))[2]
-#SS+RF
 K_RF[i]=extractAIC(glm(Stranded~AP.scale+RF.scale, data=GrayData, family=binomial))[2]
-#Season+SS+RF
 S_K_RF[i]=extractAIC(glm(Stranded~DateAsCont+AP.scale+RF.scale, data=GrayData, family=binomial))[2]
-#PDO
 PDO[i]=extractAIC(glm(Stranded~PDO.scale, data=GrayData, family=binomial))[2]
-#PDO+Season
 PDO_S[i]=extractAIC(glm(Stranded~PDO.scale+DateAsCont, data=GrayData, family=binomial))[2]
-#PDO+K
 PDO_K[i]=extractAIC(glm(Stranded~PDO.scale+AP.scale, data=GrayData, family=binomial))[2]
-#PDO+RF
 PDO_RF[i]=extractAIC(glm(Stranded~PDO.scale+RF.scale, data=GrayData, family=binomial))[2]
-#PDO+RF+K
 PDO_RF_K[i]=extractAIC(glm(Stranded~PDO.scale+RF.scale+AP.scale, data=GrayData, family=binomial))[2]
-#PDO+Season+K
 PDO_S_K[i]=extractAIC(glm(Stranded~PDO.scale+DateAsCont+AP.scale, data=GrayData, family=binomial))[2]
-#PDO+Season+RF
 PDO_S_RF[i]=extractAIC(glm(Stranded~PDO.scale+RF.scale, data=GrayData, family=binomial))[2]
-#PDO+Season+RF+K
 PDO_S_RF_K[i]=extractAIC(glm(Stranded~PDO.scale+DateAsCont+RF.scale+AP.scale, data=GrayData, family=binomial))[2]
 
 #Update progress bar
@@ -515,7 +502,7 @@ summary(x3)
 ##It then repeats n times
 
 #Initiate variables
-n=1000 #Number of times to run the loop
+n=10000 #Number of times to run the loop
 
 #Place to save the beta coefficient for each model
 oddrat_ss=rep(0,n)
