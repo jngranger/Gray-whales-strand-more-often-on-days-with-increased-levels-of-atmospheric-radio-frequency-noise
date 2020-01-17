@@ -1,5 +1,5 @@
 ---
-title: "Pretty Figures for Pub"
+title: "Code used for Analysis in paper"
 author: "Jesse Granger"
 date: "March 29, 2019"
 output:
@@ -8,20 +8,17 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-#!diagnostics off
 knitr::opts_chunk$set(echo = TRUE)
-setwd("C:/Users/Jesse/Dropbox/Jesse/Duke")
-source("Research/Navigation Orientation/Whales/Strandings/Paper Draft/CurrentBio/Final Submission/To Submit/Functions.R")
+source("Functions.R")
 library(readxl)
-library(lunar)
 library(anytime)
-nulldata=read_excel("Research/Navigation Orientation/Whales/Strandings/Raw Data/WeeklyMagneticdata__total.xlsx")
-nulldata=completeFun(nulldata,"MaxAP")
+nulldata=read_excel("SolarMagneticdata__total.xlsx") #This file contains all SS, RF and AP data for all dates
+nulldata=completeFun(nulldata,"AP")
 nulldata=nulldata[which(nulldata[,"Year"]>1985),]
 
-allgray=read_excel("Research/Navigation Orientation/Whales/Strandings/Raw Data/LiveDataUse.gray.week.xlsx")
-allgray=allgray[1:186,]
-allgray=completeFun(allgray, "RadioFluxLA")
+allgray=read_excel("LiveStrandings.gray.xlsx") #This file contains only the live strandings of gray whales, provided by NOAA
+#Note, in this file, strandings were already matched to the solar variables for the day on which the stranding occurred
+allgray=completeFun(allgray, "RadioFlux")
 
 ```
 
@@ -30,7 +27,7 @@ allgray=completeFun(allgray, "RadioFluxLA")
 ###Day-of-year of whales migration
 
 ```{r}
-#Plot the data using a day-of-year metric, where 1 is January first, and 365/366 is December 31st (depending on whether it is a leap year)
+#Plot the data using a day-of-year metric, where 1 is January first, and 365/366 is December 31st (depending on whether it is a leap year). This variable is called "DateAsCont."
 hist(allgray$DateAsCont, breaks=50, main="Histogram of strandings by day-of-year", xlab="Day of Year", xlim=c(0,400), ylim=c(0,15))
 #This is a way to do the same thing but see which months whales are stranding more often on
 #hist(allgray$Month, xlim=c(0,13))
