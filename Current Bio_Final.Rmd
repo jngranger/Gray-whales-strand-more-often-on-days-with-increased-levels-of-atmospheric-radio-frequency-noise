@@ -514,12 +514,12 @@ for (i in 1:n)
 GrayData=create(allgray, nulldata)
 
 #Glm of SS
-myglm=glm(Stranded~MaxSS, data=GrayData, family=binomial)
+myglm=glm(Stranded~SS, data=GrayData, family=binomial)
 #Save exp(beta coeff), or the odds ratio
 oddrat_ss[i]=exp(coef(myglm))[2]
 
 #Glm of RF
-myglm2=glm(Stranded~RadioFluxLA, data=GrayData, family=binomial)
+myglm2=glm(Stranded~RadioFlux, data=GrayData, family=binomial)
 #Save exp(beta coeff), or the odds ratio
 oddrat_RF[i]=exp(coef(myglm2))[2]
 }
